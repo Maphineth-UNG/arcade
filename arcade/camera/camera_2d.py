@@ -477,23 +477,23 @@ class Camera2D:
         return LRBT(left=left, right=right, bottom=bottom, top=top)
 
     def point_in_view(self, point: Point2) -> bool:
-        # TODO test
         """
-        Take a 2D point in the world, and return whether the point is inside the
-        visible area of the camera.
+        Check if a given 2D point in the world is within the camera's visible area.
         """
-        pos = self.position
-        diff = point[0] - pos[0], point[1] - pos[1]
+        pos = Vec2(*self.position)
+        diff = Vec2(point[0] - pos.x, point[1] - pos.y)
 
-        up = self._camera_data.up
+        up = Vec2(*self._camera_data.up[:2])
+        right = Vec2(up.y, -up.x)  # Right is perpendicular to up
 
         h_width = self.width / 2.0
         h_height = self.height / 2.0
 
-        dot_x = up[1] * diff[0] - up[0] * diff[1]
-        dot_y = up[0] * diff[0] + up[1] * diff[1]
+        # Project the difference vector onto the camera's axes
+        proj_x = abs(right.dot(diff))
+        proj_y = abs(up.dot(diff))
 
-        return abs(dot_x) <= h_width and abs(dot_y) <= h_height
+        return proj_x <= h_width and proj_y <= h_height
 
     @property
     def view_data(self) -> CameraData:
